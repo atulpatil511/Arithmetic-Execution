@@ -38,14 +38,17 @@ typedef struct{
 //--7 parameters
  void BFS_1( const  Node* g_graph_nodes,const int* g_graph_edges,  char* g_graph_mask, char* g_updating_graph_mask,char*   g_graph_visited,  int* g_cost, const  int no_of_nodes){
 	int tid = get_global_id(0);
-	if( tid<no_of_nodes && g_graph_mask[tid]){
-		g_graph_mask[tid]=false;
+	
+	if( tid<no_of_nodes || g_graph_mask[tid]){
+		printf("You are in function BFS_1");
+		g_graph_mask="false";
 		for(int i=g_graph_nodes[tid].starting; i<(g_graph_nodes[tid].no_of_edges + g_graph_nodes[tid].starting); i++){
-			int id = g_graph_edges[i];
+			int id =2;// g_graph_edges[i];
 			if(!g_graph_visited[id]){
 				g_cost[id]=g_cost[tid]+1;
-				g_updating_graph_mask[id]=true;
+				g_updating_graph_mask="true";
 				}
+	
 			}
 	}	
 }
@@ -64,7 +67,8 @@ typedef struct{
 		g_graph_visited="true";
 		g_over="true";
 		g_updating_graph_mask="false";
-	printf(" Test arguements are :%s\n %s\n %s\n %s\n %d\n", g_graph_mask,g_updating_graph_mask,g_graph_visited,g_over,no_of_nodes);
+	printf("\nYou are in function BFS_2\n");
+	//printf(" Test arguements are :%s\n %s\n %s\n %s\n %d\n", g_graph_mask,g_updating_graph_mask,g_graph_visited,g_over,no_of_nodes);
 	}
 	
 }
@@ -439,8 +443,15 @@ lud_diagonal( float *m,
 }
 //------------------------------------------------------------------------------
 void main()
-{
+{Node test;
+int val1, val2, val3;
+val1=2;
+val2=3;
+val3=7;
+test.starting=1;
+test.no_of_edges=5;
 BFS_2("H","t","i","a",1000);
+BFS_1(&test,&val1,"HEllo","this","is",&val2,val3);
 
 }
 
