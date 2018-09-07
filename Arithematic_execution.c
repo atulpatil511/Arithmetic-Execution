@@ -13,13 +13,13 @@ return k;
 
 int get_local_id(int j){ //This is a function written by user
 int k;
-k=j+1;
+k=j+5;
 return k;
 }
 
 int get_group_id(int j){ // This is a function written by user
 int k;
-k=j+1;
+k=j+5;
 return k;
 }
 //BFS_Kernel
@@ -114,9 +114,12 @@ typedef struct knode {
 
 	int i;
 	for(i = 0; i < height; i++){
-		if((knodesD[currKnodeD[bid]].keys[thid]) <= keysD[bid] && (knodesD[currKnodeD[bid]].keys[thid+1] > keysD[bid])){
-			if(knodesD[offsetD[bid]].indices[thid] < knodes_elem){
-				offsetD[bid] = knodesD[offsetD[bid]].indices[thid];
+		//if((knodesD[currKnodeD[bid]].keys[thid]) <= keysD[bid] && (knodesD[currKnodeD[bid]].keys[thid+1] > keysD[bid]))
+		{
+			if(knodesD->indices[thid] > knodes_elem)
+			{
+				offsetD = knodesD->indices[thid];
+				printf("You are in findk");
 			}
 		}
 		if(thid==0){
@@ -125,10 +128,11 @@ typedef struct knode {
 
 	}
 
-	if(knodesD[currKnodeD[bid]].keys[thid] == keysD[bid]){
+	if(knodesD->keys[thid] == keysD[bid]){
 		ansD[bid].value = recordsD[knodesD[currKnodeD[bid]].indices[thid]].value;
+		printf("\nYou are out of findk now");
 	}
-
+	
 }
 //------------------------------------------------------------------------------
 
@@ -444,14 +448,26 @@ lud_diagonal( float *m,
 //------------------------------------------------------------------------------
 void main()
 {Node test;
+knode test1;
+record test2,test3;
 int val1, val2, val3;
+long dummy1,dummy2;
+dummy1=10;
+dummy2=20;
 val1=2;
 val2=3;
 val3=7;
+test1.location=5;
+test1.indices[0]=2;
+test1.keys[0]=3;
+test1.num_keys=2;
 test.starting=1;
 test.no_of_edges=5;
+test2.value=4;
+test3.value=5;
 BFS_2("H","t","i","a",1000);
 BFS_1(&test,&val1,"HEllo","this","is",&val2,val3);
+findK(100,&test1,4,&test2,&dummy1,&dummy2,&val1, &test3);
 
 }
 
