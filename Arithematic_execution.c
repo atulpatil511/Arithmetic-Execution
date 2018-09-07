@@ -174,12 +174,16 @@ void findRangeK(long height,
 	int i;
 	for(i = 0; i < height; i++){
 
-		if((knodesD[currKnodeD[bid]].keys[thid] <= startD[bid]) && (knodesD[currKnodeD[bid]].keys[thid+1] > startD[bid])){
-			if(knodesD[currKnodeD[bid]].indices[thid] < knodes_elem){
-				offsetD[bid] = knodesD[currKnodeD[bid]].indices[thid];
+		if((knodesD->keys[thid] <= startD[bid]) || (knodesD->keys[thid+1] < startD[bid])){
+				
+			if(knodesD->indices[thid] <= knodes_elem)
+			{
+
+				offsetD = knodesD->indices[thid];
+				printf("\nNow you are in findranek");
 			}
 		}
-		if((knodesD[lastKnodeD[bid]].keys[thid] <= endD[bid]) && (knodesD[lastKnodeD[bid]].keys[thid+1] > endD[bid])){
+		/*if((knodesD[lastKnodeD[bid]].keys[thid] <= endD[bid]) && (knodesD[lastKnodeD[bid]].keys[thid+1] > endD[bid])){
 			if(knodesD[lastKnodeD[bid]].indices[thid] < knodes_elem){
 				offset_2D[bid] = knodesD[lastKnodeD[bid]].indices[thid];
 			}
@@ -191,11 +195,11 @@ void findRangeK(long height,
 			lastKnodeD[bid] = offset_2D[bid];
 		}
 		//	__syncthreads();
-		//barrier(CLK_LOCAL_MEM_FENCE);
+		//barrier(CLK_LOCAL_MEM_FENCE);*/
 	}
 
 	// Find the index of the starting record
-	if(knodesD[currKnodeD[bid]].keys[thid] == startD[bid]){
+	/*if(knodesD[currKnodeD[bid]].keys[thid] == startD[bid]){
 		RecstartD[bid] = knodesD[currKnodeD[bid]].indices[thid];
 	}
 	//	__syncthreads();
@@ -203,7 +207,7 @@ void findRangeK(long height,
 
 	if(knodesD[lastKnodeD[bid]].keys[thid] == endD[bid]){
 		ReclenD[bid] = knodesD[lastKnodeD[bid]].indices[thid] - RecstartD[bid]+1;
-	}
+	}*/
 
 }
 //------------------------------------------------------------------------------
@@ -447,27 +451,39 @@ lud_diagonal( float *m,
 }
 //------------------------------------------------------------------------------
 void main()
-{Node test;
-knode test1;
-record test2,test3;
-int val1, val2, val3;
-long dummy1,dummy2;
-dummy1=10;
-dummy2=20;
-val1=2;
-val2=3;
-val3=7;
-test1.location=5;
-test1.indices[0]=2;
-test1.keys[0]=3;
-test1.num_keys=2;
-test.starting=1;
-test.no_of_edges=5;
-test2.value=4;
-test3.value=5;
+{	Node test;
+	knode test1;
+	record test2,test3;
+
+	int val1, val2, val3,val4;
+	long dummy1,dummy2,dummy3,dummy4;
+
+
+	dummy1=10;
+	dummy2=20;
+	dummy3=30;
+	dummy4=40;
+	val1=2;
+	val2=3;
+	val3=7;
+	val4=8;
+
+
+	test1.location=5;
+	test1.indices[0]=2;
+	test1.keys[0]=3;
+	test1.num_keys=2;
+	test.starting=1;
+	test.no_of_edges=5;
+	test2.value=4;
+	test3.value=5;
+
+
+
 BFS_2("H","t","i","a",1000);
 BFS_1(&test,&val1,"HEllo","this","is",&val2,val3);
 findK(100,&test1,4,&test2,&dummy1,&dummy2,&val1, &test3);
+findRangeK(100,&test1,100,&dummy1,&dummy2,&dummy3,&dummy4,&val1,&val2,&val3,&val4);
 
 }
 
