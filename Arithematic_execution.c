@@ -183,9 +183,10 @@ void findRangeK(long height,
 				printf("\nNow you are in findranek");
 			}
 		}
-		/*if((knodesD[lastKnodeD[bid]].keys[thid] <= endD[bid]) && (knodesD[lastKnodeD[bid]].keys[thid+1] > endD[bid])){
-			if(knodesD[lastKnodeD[bid]].indices[thid] < knodes_elem){
-				offset_2D[bid] = knodesD[lastKnodeD[bid]].indices[thid];
+		if((knodesD->keys[thid] <= endD[bid]) || (knodesD->keys[thid+1] > endD[bid])){
+			if(knodesD->indices[thid] < knodes_elem){
+				offset_2D[bid] = knodesD->indices[thid];
+				printf("\nYou are in other Find");
 			}
 		}
 		//__syncthreads();
@@ -195,19 +196,19 @@ void findRangeK(long height,
 			lastKnodeD[bid] = offset_2D[bid];
 		}
 		//	__syncthreads();
-		//barrier(CLK_LOCAL_MEM_FENCE);*/
+		//barrier(CLK_LOCAL_MEM_FENCE);
 	}
 
 	// Find the index of the starting record
-	/*if(knodesD[currKnodeD[bid]].keys[thid] == startD[bid]){
+	if(knodesD->keys[thid] == startD[bid]){
 		RecstartD[bid] = knodesD[currKnodeD[bid]].indices[thid];
 	}
 	//	__syncthreads();
 	//barrier(CLK_LOCAL_MEM_FENCE);
 
-	if(knodesD[lastKnodeD[bid]].keys[thid] == endD[bid]){
+	if(knodesD->keys[thid] == endD[bid]){
 		ReclenD[bid] = knodesD[lastKnodeD[bid]].indices[thid] - RecstartD[bid]+1;
-	}*/
+	}
 
 }
 //------------------------------------------------------------------------------
@@ -221,15 +222,17 @@ typedef struct latLong
         float lng;
     } LatLong;
 
- void Fan2( float * restrict m_dev,
-                   float * restrict a_dev,
-                   float * restrict b_dev,
+ void Fan2( float *  m_dev,
+                   float *  a_dev,
+                   float *  b_dev,
                   const int size,
                   const int t) {	 
 	 int globalIdx = get_global_id(0);
 	 int globalIdy = get_global_id(1);
-      if (globalIdx < size-1-t && globalIdy < size-t) {
-         a_dev[size*(globalIdx+1+t)+(globalIdy+t)] -= m_dev[size*(globalIdx+1+t)+t] * a_dev[size*t+(globalIdy+t)];
+
+      if (globalIdx < size-1-t || globalIdy > size-t) {
+		printf("\nYou are in FAN2");
+         *a_dev -= (*m_dev) * (*a_dev);
 		if(globalIdy == 0){
  		   b_dev[globalIdx+1+t] -= m_dev[size*(globalIdx+1+t)+(globalIdy+t)] * b_dev[t];
  	    }
@@ -245,9 +248,9 @@ typedef struct latLong
 //__attribute__((num_simd_work_items(SIMD_WORK_ITEMS)))
 //__attribute__((reqd_work_group_size(WORK_GROUP_SIZE,1,1)))
  void hotspot(  int iteration,  //number of iteration
-                                float * restrict power,   //power input
-                                float * restrict temp_src,    //temperature input/output
-                                float * restrict temp_dst,    //temperature input/output
+                                float *  power,   //power input
+                                float *  temp_src,    //temperature input/output
+                                float *  temp_dst,    //temperature input/output
                                int grid_cols,  //Col of grid
                                int grid_rows,  //Row of grid
 			   int border_cols,  // border offset 
@@ -302,9 +305,12 @@ typedef struct latLong
 	int loadYidx=yidx, loadXidx=xidx;
 	int index = grid_cols*loadYidx+loadXidx;
        
-	if(IN_RANGE(loadYidx, 0, grid_rows-1) && IN_RANGE(loadXidx, 0, grid_cols-1)){
+	//if(IN_RANGE(loadYidx, 0, grid_rows-1) || IN_RANGE(loadXidx, 0, grid_cols-1))
+	{
+
             temp_on_cuda[ty][tx] = temp_src[index];  // Load the temperature data from global memory to shared memory
             power_on_cuda[ty][tx] = power[index];// Load the power data from global memory to shared memory
+		printf("\nYou are in hotspot");
 	}
 	//barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -329,16 +335,16 @@ typedef struct latLong
 	bool computed;
 	for (int i=0; i<iteration ; i++){ 
 		computed = false;
-		if( IN_RANGE(tx, i+1, BLOCK_SIZE-i-2) &&  \
-		IN_RANGE(ty, i+1, BLOCK_SIZE-i-2) &&  \
-		IN_RANGE(tx, validXmin, validXmax) && \
+		if( IN_RANGE(tx, i+1, BLOCK_SIZE-i-2) ||  \
+		IN_RANGE(ty, i+1, BLOCK_SIZE-i-2) ||  \
+		IN_RANGE(tx, validXmin, validXmax) || \
 		IN_RANGE(ty, validYmin, validYmax) ) {
 			computed = true;
 			temp_t[ty][tx] =   temp_on_cuda[ty][tx] + step_div_Cap * (power_on_cuda[ty][tx] + 
 			(temp_on_cuda[S][tx] + temp_on_cuda[N][tx] - 2.0f * temp_on_cuda[ty][tx]) * Ry_1 + 
 			(temp_on_cuda[ty][E] + temp_on_cuda[ty][W] - 2.0f * temp_on_cuda[ty][tx]) * Rx_1 + 
 			(amb_temp - temp_on_cuda[ty][tx]) * Rz_1);
-
+			printf("\nYou are in hotspot2");
 		}
 	//	barrier(CLK_LOCAL_MEM_FENCE);
 		
@@ -418,7 +424,7 @@ lud_diagonal( float *m,
 
 	int array_offset = offset*matrix_dim+offset;
 	for(i=0; i < BLOCK_SIZE; i++){
-		shadow[i * BLOCK_SIZE + tx]=m[array_offset + tx];
+		*shadow=*m;
 		array_offset += matrix_dim;
 	}
   
@@ -428,15 +434,17 @@ lud_diagonal( float *m,
 
     if (tx>i){
       for(j=0; j < i; j++)
-        shadow[tx * BLOCK_SIZE + i] -= shadow[tx * BLOCK_SIZE + j] * shadow[j * BLOCK_SIZE + i];
-		shadow[tx * BLOCK_SIZE + i] /= shadow[i * BLOCK_SIZE + i];
+        *shadow-= (*shadow) * (*shadow);
+		*shadow /= (*shadow);
+	printf("\nYou are in first for");
     }
 
 	//barrier(CLK_LOCAL_MEM_FENCE);
     if (tx>i){
 
       for(j=0; j < i+1; j++)
-        shadow[(i+1) * BLOCK_SIZE + tx] -= shadow[(i+1) * BLOCK_SIZE + j]*shadow[j * BLOCK_SIZE + tx];
+        *shadow -= (*shadow)*(*shadow);
+	printf("\nYou are in second for");
     }
     
 	//barrier(CLK_LOCAL_MEM_FENCE);
@@ -444,8 +452,9 @@ lud_diagonal( float *m,
 
     array_offset = (offset+1)*matrix_dim+offset;
     for(i=1; i < BLOCK_SIZE; i++){
-      m[array_offset+tx]=shadow[i * BLOCK_SIZE + tx];
+      *m=*shadow;
       array_offset += matrix_dim;
+	printf("\n You are in third for");
     }
   
 }
@@ -454,15 +463,18 @@ void main()
 {	Node test;
 	knode test1;
 	record test2,test3;
-
+	LatLong test4;
 	int val1, val2, val3,val4;
 	long dummy1,dummy2,dummy3,dummy4;
-
+	float dummy5,dummy6,dummy7;
 
 	dummy1=10;
 	dummy2=20;
 	dummy3=30;
 	dummy4=40;
+	dummy5=11.0;
+	dummy6=28.0;
+	dummy7=21.0;
 	val1=2;
 	val2=3;
 	val3=7;
@@ -477,14 +489,19 @@ void main()
 	test.no_of_edges=5;
 	test2.value=4;
 	test3.value=5;
+	test4.lat=8.0;
+	test4.lng=9.0;
 
 
 
 BFS_2("H","t","i","a",1000);
-BFS_1(&test,&val1,"HEllo","this","is",&val2,val3);
+BFS_1(&test,&val1,"This","is","C",&val2,val3);
 findK(100,&test1,4,&test2,&dummy1,&dummy2,&val1, &test3);
 findRangeK(100,&test1,100,&dummy1,&dummy2,&dummy3,&dummy4,&val1,&val2,&val3,&val4);
-
+Fan2( &dummy5,&dummy6,&dummy7,&val1,&val2);
+hotspot(10,&dummy5,&dummy6,&dummy7,2,5,6,4,3.2,4.6,8.3,2.3,2.0);   
+lud_diagonal(&dummy6, &dummy5, 5,10);			 
+                               
 }
 
 
