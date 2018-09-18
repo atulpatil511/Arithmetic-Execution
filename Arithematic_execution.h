@@ -368,7 +368,7 @@ typedef struct latLong
 //------------------------------------------------------------------------------
 //#include "./../main.h"
  void 
-extract_kernel(long d_Ne,
+extract_kernel(int d_Ne,
 	        fp* d_I){	      // pointer to input image (DEVICE GLOBAL MEMORY)
 
 	// indexes
@@ -380,7 +380,7 @@ extract_kernel(long d_Ne,
 	if(ei<d_Ne){			      // do only for the number of elements, omit extra threads
 
 		d_I[ei] = exp(d_I[ei]/255);   // exponentiate input IMAGE and copy to output image
-
+		printf("You are in extract kernel");
 	}
 
 }
@@ -397,16 +397,17 @@ extract_kernel(long d_Ne,
 
  void NearestNeighbor( LatLong *d_locations,
 							   float *d_distances,
-							  const int numRecords,
-							  const float lat,
-							  const float lng) {
+							   int numRecords,
+							   float lat,
+							   float lng) {
 	 int globalId = get_global_id(0);
 							  
      if (globalId < numRecords) {
           LatLong *latLong = d_locations+globalId;
-    
-          float *dist=d_distances+globalId;
-         *dist = (float)sqrt((lat-latLong->lat)*(lat-latLong->lat)+(lng-latLong->lng)*(lng-latLong->lng));
+    	
+          float dist= *d_distances+globalId;
+         dist = (float)sqrt((lat+latLong->lat)*(lat+latLong->lat)+(lng+latLong->lng)*(lng+latLong->lng));
+	printf("You are in Latlong now\n");
 	 }
 }
 //------------------------------------------------------------------------------
